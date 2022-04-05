@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.panel-lyric" path="/org/gnome/shell/extensions/panel-lyric/">
+    <key type="u" name="refresh-interval">
+        <range min="50" max="500"/>
+        <default>60</default>
+        <summary>lyric refresh interval (ms)</summary>
+    </key>
+    <key type="s" name="lyric-location">
+        <default>""</default>
+        <summary>location for saving and reading lyrics</summary>
+    </key>
+  </schema>
+</schemalist>
+

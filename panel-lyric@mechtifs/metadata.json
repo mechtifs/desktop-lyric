@@ -1,0 +1,12 @@
+{
+  "name": "Panel Lyric",
+  "description": "Show the lyric of playing songs on the panel\n\nFor support, please report any issues via the homepage link below.",
+  "uuid": "panel-lyric@mechtifs",
+  "gettext-domain": "gnome-shell-extension-panel-lyric",
+  "settings-schema": "org.gnome.shell.extensions.panel-lyric",
+  "url": "https://github.com/mechtifs/panel-lyric",
+  "shell-version": [
+    "42"
+  ],
+  "version": 14
+}

@@ -17,7 +17,6 @@ const Lyric = Me.imports.lyric;
 const Paper = Me.imports.paper;
 let gsettings = null;
 
-const genIcon = x => Gio.Icon.new_for_string(Me.dir.get_child('icons').get_child(`${x}-symbolic.svg`).get_path());
 const genParam = (type, name, ...dflt) => GObject.ParamSpec[type](name, name, name, GObject.ParamFlags.READWRITE, ...dflt);
 
 class SwitchItem extends PopupMenu.PopupSwitchMenuItem {
@@ -50,9 +49,7 @@ class DesktopLyric extends GObject.Object {
     static {
         GObject.registerClass({
             Properties: {
-                drag:     genParam('boolean', 'drag', false),
                 location: genParam('string', 'location', ''),
-                systray:  genParam('boolean', 'systray', false),
                 interval: genParam('uint', 'interval', 50, 500, 60),
                 position: genParam('int64', 'position', 0, Number.MAX_SAFE_INTEGER, 0),
             },
@@ -62,8 +59,8 @@ class DesktopLyric extends GObject.Object {
     constructor() {
         super();
         this._lyric = new Lyric.Lyric();
-        this._paper = new Paper.Paper(gsettings);
         this._mpris = new Mpris.MprisPlayer();
+        this._paper = new Paper.Paper(gsettings, this._mpris);
         this.bind_property('position', this._paper, 'position', GObject.BindingFlags.DEFAULT);
         this.bind_property('location', this._lyric, 'location', GObject.BindingFlags.DEFAULT);
         this._mpris.connectObject('update', this._update.bind(this),
@@ -71,17 +68,12 @@ class DesktopLyric extends GObject.Object {
             'status', (player, status) => (this.status = status),
             'seeked', (player, position) => (this.position = position / 1000), this);
         Main.overview.connectObject('showing', () => (this.view = true), 'hidden', () => (this.view = false), this);
-        [[Fields.DRAG, 'drag'], [Fields.INTERVAL, 'interval'], [Fields.SYSTRAY, 'systray'], [Fields.LOCATION, 'location']]
+        [[Fields.INTERVAL, 'interval'], [Fields.LOCATION, 'location']]
             .forEach(([x, y, z]) => gsettings.bind(x, this, y, z ?? Gio.SettingsBindFlags.GET));
     }
 
-    set view(view) {
-        this._view = view;
-        this._updateViz();
-    }
-
     get hide() {
-        return this.status !== 'Playing' || this._view || this._menus?.hide.state;
+        return this.status !== 'Playing' || this._menus?.hide.state;
     }
 
     set drag(drag) {
@@ -95,7 +87,14 @@ class DesktopLyric extends GObject.Object {
     }
 
     set playing(playing) {
-        this._updateViz();
+        if (playing) {
+            this._paper.play = true;
+            this._paper.hide = false;
+        } else {
+            this._paper.play = false;
+            this._paper.fadeOut();
+            this._paper.hide = true;
+        }
         clearInterval(this._refreshId);
         if(playing) this._refreshId = setInterval(() => (this.position += this._interval + 1), this._interval);
     }
@@ -114,56 +113,30 @@ class DesktopLyric extends GObject.Object {
     }
 
     _update(_player, title, artists, length) {
+        this._paper.hide = true;
+        this._paper.fadeOut();
+        if(!this._lyric) return;
         if(this._title === title && JSON.stringify(this._artists) === JSON.stringify(artists)) {
             this._syncPosition(x => length - x > 5000 || !length ? x : 50);
         } else {
             this._title = title;
             this._artists = artists;
             this._lyric.find(title, artists).then(text => {
+                this._paper.play = true;
                 this._paper.text = text;
                 this._paper.length = length;
                 this._syncPosition(x => length - x > 5000 || !length ? x : 50); // some buggy mpris
                 this.playing = this._mpris.status === 'Playing';
             }).catch(() => {
                 this.playing = false;
+                this._paper.play = false;
                 this._paper.text = '';
-                this._paper._area.queue_repaint();
             });
         }
     }
 
-    set systray(systray) {
-        if(systray) {
-            if(this._button) return;
-            this._button = new PanelMenu.Button(0.5);
-            this._button.menu.actor.add_style_class_name('app-menu');
-            this._button.add_actor(new St.Icon({ gicon: genIcon('lyric'), style_class: 'desktop-lyric-systray system-status-icon' }));
-            Main.panel.addToStatusArea(Me.metadata.uuid, this._button);
-            this._addMenuItems();
-        } else {
-            if(!this._button) return;
-            this._button.destroy();
-            this._menus = this._button = null;
-        }
-    }
-
-    _updateViz() {
-        if(this._paper.hide ^ this.hide) this._paper.hide = !this._paper.hide;
-    }
-
-    _addMenuItems() {
-        this._menus = {
-            hide:     new SwitchItem(_('Hide lyric'), this._paper.hide, this._updateViz.bind(this)),
-            unlock:   new SwitchItem(_('Unlock position'), this._drag, () => { this._button.menu.close(); gsettings.set_boolean(Fields.DRAG, !this._drag); }),
-            resync:   new MenuItem(_('Resynchronize'), () => this._syncPosition(x => x + 50)),
-            sep:      new PopupMenu.PopupSeparatorMenuItem(),
-            settings: new MenuItem(_('Settings'), () => ExtensionUtils.openPrefs()),
-        };
-        for(let p in this._menus) this._button.menu.addMenuItem(this._menus[p]);
-    }
-
     destroy() {
-        this.playing = this.systray = null;
+        this.playing = null;
         Main.overview.disconnectObject(this);
         ['_mpris', '_lyric', '_paper'].forEach(x => { this[x].destroy(); this[x] = null; });
     }
@@ -188,4 +161,5 @@ class Extension {
 function init() {
     return new Extension();
 }
+
 

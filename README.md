@@ -1,12 +1,14 @@
-# desktop-lyric
+# panel-lyric
+## ⚠️ WARNING
+Since I'm quite new to JavaScript, this fork is for experimental purpose only, which may contains some serious bugs.
 
-Show the lyric of playing songs on the desktop.
+Instead of displaying the lyric of playing songs on the desktop, it displays the lyric on the top panel.
 
 >很多歌消失了。 —— *汪曾祺 《徙》*<br>
 [![license]](/LICENSE)
 <br>
 
-![bee](https://user-images.githubusercontent.com/17917040/107332354-08111f80-6aef-11eb-9c7a-f8799c834501.png)
+![lyric](https://raw.githubusercontent.com/mechtifs/panel-lyric/main/assets/lyric.png)
 
 ## Installation
 
@@ -34,12 +36,12 @@ git checkout your_gnome_shell_version
 
 ## Features
 
-![dlpref](https://user-images.githubusercontent.com/17917040/155883047-593e79cb-9647-4c9c-bbbd-665c90719305.png)
+![settings](https://raw.githubusercontent.com/mechtifs/panel-lyric/main/assets/settings.png)
 
 
 ## Note
 
-* High CPU usage;
+* Maybe less CPU usage;
 * The missing lyrics will be downloaded from [NetEase];
 * The lyric ([LRC] format) filename format is `Title-Artist1,Artist2.lrc`;
 * Draw at an even pace so that exact synchronization with the song is impossible;

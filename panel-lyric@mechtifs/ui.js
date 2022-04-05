@@ -1,6 +1,6 @@
 // vim:fdm=syntax
 // by tuberry
-/* exported File Color Short PrefRow Drop LazyEntry Spin */
+/* exported File hort PrefRow LazyEntry Spin */
 'use strict';
 
 const { Adw, Gtk, Gdk, GObject, Gio, GLib } = imports.gi;
@@ -90,30 +90,6 @@ var File = class extends Gtk.Box {
                     }
                 }
             });
-    }
-};
-
-var Color = class extends Gtk.ColorButton {
-    static {
-        GObject.registerClass({
-            Properties: {
-                colour: genParam('string', 'colour', ''),
-            },
-        }, this);
-    }
-
-    constructor(text, alpha) {
-        super({ use_alpha: !alpha, title: text, tooltip_text: text, valign: Gtk.Align.CENTER });
-        this.connect('color-set', () => this.notify('colour'));
-    }
-
-    get colour() {
-        return this.get_rgba().to_string();
-    }
-
-    set colour(value) {
-        let color = new Gdk.RGBA();
-        if(color.parse(value)) this.set_rgba(color);
     }
 };
 
@@ -224,17 +200,6 @@ var Spin = class extends Gtk.SpinButton {
     constructor(l, u, s, tip) {
         super({ tooltip_text: tip || '', valign: Gtk.Align.CENTER });
         this.set_adjustment(new Gtk.Adjustment({ lower: l, upper: u, step_increment: s }));
-    }
-};
-
-var Drop = class extends Gtk.DropDown {
-    // NOTE: upstream issue - https://gitlab.gnome.org/GNOME/gtk/-/issues/2877
-    static {
-        GObject.registerClass(this);
-    }
-
-    constructor(...args) {
-        super({ model: Gtk.StringList.new(args), valign: Gtk.Align.CENTER });
     }
 };
 
