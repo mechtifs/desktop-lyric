@@ -11,6 +11,7 @@ const { Gio, Clutter, St, GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Fields = Me.imports.fields.Fields;
+const appMenu = Main.panel.statusArea.appMenu;
 
 const splitAt = i => x => [x.slice(0, i), x.slice(i)];
 const toMS = x => x.split(':').reverse().reduce((a, v, i) => a + parseFloat(v) * 60 ** i, 0) * 1000; // 1:1 => 61000 ms
@@ -49,7 +50,7 @@ var Paper = class extends GObject.Object {
         this._gsettings = gsettings;
         this._mpris = mpris;
         this._button = new PanelMenu.Button(0.0, null, false);
-        this._label = new St.Label({ text: '---', style_class: 'app-menu panel-button', 'y-align': Clutter.ActorAlign.CENTER });
+        this._label = new St.Label({ text: '---', style_class: 'app-menu panel-button', y_align: Clutter.ActorAlign.CENTER, y_expand: true, });
         this._button.actor.add_actor(this._label);
         Main.panel.addToStatusArea(Me.metadata.uuid, this._button, 2, 'left');
         this._button.hide();
@@ -134,10 +135,15 @@ var Paper = class extends GObject.Object {
     draw() {
         let [position, txt] = this.text
         if (txt) {
-            this._label.set_text(txt);
+            this._label.set_text(txt, 255);
             this.fadeIn();
         // } else {
         //     this.fadeOut();
+        }
+        if (appMenu._visible) {
+            appMenu.show();
+        } else {
+            appMenu.hide();
         }
     }
 
