@@ -40,15 +40,17 @@ var Paper = class extends GObject.Object {
                 offset:   genParam('int', 'offset', -100000, 100000, 0),
                 position: genParam('int64', 'position', 0, Number.MAX_SAFE_INTEGER, 0),
             },
+            Signals: {
+                resync:   { },
+            },
         }, this);
     }
 
-    constructor(gsettings, mpris) {
+    constructor(gsettings) {
         super();
         this.length = 0;
         this.text = '';
         this._gsettings = gsettings;
-        this._mpris = mpris;
         this._button = new PanelMenu.Button(0.0, null, false);
         this._label = new St.Label({ text: '---', style_class: 'app-menu panel-button', y_align: Clutter.ActorAlign.CENTER, y_expand: true, });
         this._button.actor.add_actor(this._label);
@@ -79,15 +81,11 @@ var Paper = class extends GObject.Object {
         }
     }
 
-    _syncPosition(callback) {
-        this._mpris.getPosition().then(scc => (this.position = callback(scc / 1000))).catch(() => (this.position = 0));
-    }
-
     _addMenuItems() {
         this._menus = {
-            resync:   new MenuItem(_('Resynchronize'), () => this._syncPosition(x => x + 50)),
-            slower:   new MenuItem(_('500ms Slower'), () => { this.offset -= 500; }),
-            faster:   new MenuItem(_('500ms Faster'), () => { this.offset += 500; }),
+            resync:   new MenuItem(_('Resynchronize'), () => { this.emit('resync'); }),
+            slower:   new MenuItem(_('0.5s Slower'), () => { this.offset -= 500; }),
+            faster:   new MenuItem(_('0.5s Faster'), () => { this.offset += 500; }),
             sep:      new PopupMenu.PopupSeparatorMenuItem(),
             settings: new MenuItem(_('Settings'), () => ExtensionUtils.openPrefs()),
         };
@@ -99,7 +97,7 @@ var Paper = class extends GObject.Object {
         this._button.remove_all_transitions();
         this._button.ease({
             opacity: 255,
-            duration: Overview.ANIMATION_TIME * .5,
+            duration: Overview.ANIMATION_TIME / 2,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
     }
@@ -137,8 +135,6 @@ var Paper = class extends GObject.Object {
         if (txt) {
             this._label.set_text(txt, 255);
             this.fadeIn();
-        // } else {
-        //     this.fadeOut();
         }
         if (appMenu._visible) {
             appMenu.show();

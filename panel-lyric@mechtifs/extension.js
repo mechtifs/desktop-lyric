@@ -11,6 +11,7 @@ const { St, Gio, GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const _ = ExtensionUtils.gettext;
 const Me = ExtensionUtils.getCurrentExtension();
+const AppMenu = Main.panel.statusArea.appMenu;
 const Fields = Me.imports.fields.Fields;
 const Mpris = Me.imports.mpris;
 const Lyric = Me.imports.lyric;
@@ -45,7 +46,7 @@ class MenuItem extends PopupMenu.PopupMenuItem {
     }
 }
 
-class DesktopLyric extends GObject.Object {
+class PanelLyric extends GObject.Object {
     static {
         GObject.registerClass({
             Properties: {
@@ -60,13 +61,14 @@ class DesktopLyric extends GObject.Object {
         super();
         this._lyric = new Lyric.Lyric();
         this._mpris = new Mpris.MprisPlayer();
-        this._paper = new Paper.Paper(gsettings, this._mpris);
+        this._paper = new Paper.Paper(gsettings);
         this.bind_property('position', this._paper, 'position', GObject.BindingFlags.DEFAULT);
         this.bind_property('location', this._lyric, 'location', GObject.BindingFlags.DEFAULT);
         this._mpris.connectObject('update', this._update.bind(this),
             'closed', () => (this.status = 'Stopped'),
             'status', (player, status) => (this.status = status),
             'seeked', (player, position) => (this.position = position / 1000), this);
+        this._paper.connectObject('resync', () => (this._syncPosition(x => x + 50)), this);
         Main.overview.connectObject('showing', () => (this.view = true), 'hidden', () => (this.view = false), this);
         [[Fields.INTERVAL, 'interval'], [Fields.LOCATION, 'location']]
             .forEach(([x, y, z]) => gsettings.bind(x, this, y, z ?? Gio.SettingsBindFlags.GET));
@@ -94,6 +96,7 @@ class DesktopLyric extends GObject.Object {
             this._paper.play = false;
             this._paper.fadeOut();
             this._paper.hide = true;
+            AppMenu.show();
         }
         clearInterval(this._refreshId);
         if(playing) this._refreshId = setInterval(() => (this.position += this._interval + 1), this._interval);
@@ -149,7 +152,7 @@ class Extension {
 
     enable() {
         gsettings = ExtensionUtils.getSettings();
-        this._ext = new DesktopLyric();
+        this._ext = new PanelLyric();
     }
 
     disable() {
