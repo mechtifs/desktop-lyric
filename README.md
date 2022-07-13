@@ -1,6 +1,4 @@
 # panel-lyric
-## ⚠️ WARNING
-Since I'm quite new to JavaScript, this fork is for experimental purpose only, which may contains some serious bugs.
 
 Instead of displaying the lyric of playing songs on the desktop, it displays the lyric on the top panel.
 
@@ -56,4 +54,4 @@ git checkout your_gnome_shell_version
 [NetEase]:http://music.163.com/
 [lyrics-finder]:https://github.com/TheWeirdDev/lyrics-finder-gnome-ext
 [osdlyrics]:https://github.com/osdlyrics/osdlyrics
-[EGO]:https://extensions.gnome.org/extension/4006/desktop-lyric/
+[EGO]:https://extensions.gnome.org/extension/5201/panel-lyric/

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.panel-lyric" path="/org/gnome/shell/extensions/panel-lyric/">
+    </key>
     <key type="u" name="refresh-interval">
         <range min="50" max="500"/>
         <default>60</default>
