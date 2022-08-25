@@ -6,7 +6,7 @@
   "settings-schema": "org.gnome.shell.extensions.panel-lyric",
   "url": "https://github.com/mechtifs/panel-lyric",
   "shell-version": [
-    "42"
+    "43"
   ],
-  "version": 14
+  "version": 15
 }

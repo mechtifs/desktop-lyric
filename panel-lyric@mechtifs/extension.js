@@ -12,11 +12,10 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const _ = ExtensionUtils.gettext;
 const Me = ExtensionUtils.getCurrentExtension();
 const AppMenu = Main.panel.statusArea.appMenu;
-const Fields = Me.imports.fields.Fields;
+const { Fields } = Me.imports.fields;
 const Mpris = Me.imports.mpris;
 const Lyric = Me.imports.lyric;
 const Paper = Me.imports.paper;
-let gsettings = null;
 
 const genParam = (type, name, ...dflt) => GObject.ParamSpec[type](name, name, name, GObject.ParamFlags.READWRITE, ...dflt);
 
@@ -60,8 +59,9 @@ class PanelLyric extends GObject.Object {
     constructor() {
         super();
         this._lyric = new Lyric.Lyric();
+        this.gset = ExtensionUtils.getSettings();
+        this._paper = new Paper.Paper(this.gset);
         this._mpris = new Mpris.MprisPlayer();
-        this._paper = new Paper.Paper(gsettings);
         this.bind_property('position', this._paper, 'position', GObject.BindingFlags.DEFAULT);
         this.bind_property('location', this._lyric, 'location', GObject.BindingFlags.DEFAULT);
         this._mpris.connectObject('update', this._update.bind(this),
@@ -70,8 +70,10 @@ class PanelLyric extends GObject.Object {
             'seeked', (player, position) => (this.position = position / 1000), this);
         this._paper.connectObject('resync', () => (this._syncPosition(x => x + 50)), this);
         Main.overview.connectObject('showing', () => (this.view = true), 'hidden', () => (this.view = false), this);
-        [[Fields.INTERVAL, 'interval'], [Fields.LOCATION, 'location']]
-            .forEach(([x, y, z]) => gsettings.bind(x, this, y, z ?? Gio.SettingsBindFlags.GET));
+        this._field = new Field({
+            location: [Fields.LOCATION, 'string'],
+            interval: [Fields.INTERVAL, 'uint'],
+        }, this.gset, this);
     }
 
     get hide() {
@@ -151,13 +153,12 @@ class Extension {
     }
 
     enable() {
-        gsettings = ExtensionUtils.getSettings();
         this._ext = new PanelLyric();
     }
 
     disable() {
         this._ext.destroy();
-        gsettings = this._ext = null;
+        this._ext = null;
     }
 }
 

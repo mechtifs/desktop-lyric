@@ -27,11 +27,6 @@ For older versions, it's necessary to switch the git tag before `make`:
 git checkout your_gnome_shell_version
 ```
 
-### E.G.O
-
-[<img src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg?sanitize=true" alt="Get it on GNOME Extensions" height="100" align="middle">][EGO]
-
-
 ## Features
 
 ![settings](https://raw.githubusercontent.com/mechtifs/panel-lyric/main/assets/settings.png)

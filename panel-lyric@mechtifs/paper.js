@@ -10,7 +10,7 @@ const PopupMenu = imports.ui.popupMenu;
 const { Gio, Clutter, St, GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Fields = Me.imports.fields.Fields;
+const { Fields } = Me.imports.fields;
 const appMenu = Main.panel.statusArea.appMenu;
 
 const splitAt = i => x => [x.slice(0, i), x.slice(i)];
@@ -46,11 +46,10 @@ var Paper = class extends GObject.Object {
         }, this);
     }
 
-    constructor(gsettings) {
+    constructor(gset) {
         super();
         this.length = 0;
         this.text = '';
-        this._gsettings = gsettings;
         this._button = new PanelMenu.Button(0.0, null, false);
         this._label = new St.Label({ text: '---', style_class: 'app-menu panel-button', y_align: Clutter.ActorAlign.CENTER, y_expand: true, });
         this._button.actor.add_actor(this._label);
